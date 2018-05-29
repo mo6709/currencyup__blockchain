@@ -12,7 +12,7 @@ router.get('/api/blocks', (req, res) => {
 
 
 router.post('/api/blocks', (req, res) => {
-    let transactionInfo = {};
+    let transactionInfo = req.body.tran;
     globalBlockchain.createTransaction(transactionInfo);
     const minedTran = globalBlockchain.miningPendingTransactions("address");
     res.status(200).send(minedTran);
