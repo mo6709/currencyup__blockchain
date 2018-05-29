@@ -18,7 +18,7 @@ class Block{
         async function dbOperation() {
 			const db = await MongoClient.connect(url);
 			const dbo = db.db('currencyup_blockchain');
-			const cursor = await dbo.collection('Blocks').insertOne(block);
+			await dbo.collection('Blocks').insertOne(block);
 			db.close();
 		}
 
@@ -44,7 +44,7 @@ class Block{
 		callback(resultArray);
 	}
 
-	getLatestBlock(callback){
+	async getLatestBlock(callback){
 		let resultArray = [];
 
 		async function dbOperation() {
