@@ -1,6 +1,7 @@
 const Transaction = require('../transaction');
 const Block = require('./block');
 const globalBlock = new Block();
+const globalTransaction = new Transaction();
 
 class Blockchain{
     constructor(){
@@ -15,13 +16,13 @@ class Blockchain{
     }
 
     miningPendingTransactions(miningRewardAddress){
-        let newBlock = new Block(Data.now(), Transaction.pendingTransactions(), globalBlock.getLatestBlock().hash);
+        let newBlock = new Block(Data.now(), globalTransaction.pendingTransactions(), globalBlock.getLatestBlock().hash);
         globalBlock.mineBlock(this.difficulty);
 
-        globalBlock.insertToDb(newBlock);
+        globalBlock.insertToDB(newBlock);
         //reset the transactions array after the miner finish to mine it
         //add new transaction to reword the miner
-        Transaction.resetPendingTransactions({ 
+        globalTransaction.resetPendingTransactions({ 
             toAddress: miningRewardAddress, 
             total_amount: this.miningReward 
         });
@@ -29,7 +30,7 @@ class Blockchain{
     
 
     createTransaction(transaction){
-        Transaction.insertPendingTransaction(transaction);
+        globalTransaction.insertPendingTransaction(transaction);
     }
 
     getBalanceOfAddress(address){

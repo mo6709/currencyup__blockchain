@@ -13,53 +13,55 @@ class Block{
 		this.hash = this.calculateHash();
 		this.nonce = 0;
 	}
-
-	dbConnection(){}
     
-    insertToDB(block){
-        MongoClient.connect(url, (err, db) => {
-            if(err) throw err;
-            const dbo = db.db("currencyup_blockchain");
-            dbo.collection("blocks").insertOne(block, (err, result) => {
-            	if(err) throw err;
-            	db.close();
-            	return block;
-            })
-        })
+    async insertToDB(block){
+        async function dbOperation() {
+			const db = await MongoClient.connect(url);
+			const dbo = db.db('currencyup_blockchain');
+			const cursor = await dbo.collection('Blocks').insertOne(block);
+			db.close();
+		}
+
+		await dbOperation();
     }
 
 	async all(callback){
         let resultArray = [];
-		async function test() {
-		  const db = await MongoClient.connect(url);
-		  const dbo = db.db('currencyup_blockchain');
-		  // Don't `await`, instead get a cursor
-		  const cursor = dbo.collection('blocks').find();
-		  // Use `next()` and `await` to exhaust the cursor
-		  for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
-		    resultArray.push(doc);
-		  }
+
+		async function dbOperation() {
+			const db = await MongoClient.connect(url);
+			const dbo = db.db('currencyup_blockchain');
+			// Don't `await`, instead get a cursor
+			const cursor = dbo.collection('Blocks').find();
+			// Use `next()` and `await` to exhaust the cursor
+			for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+			    resultArray.push(doc);
+			}
+			db.close();
 		}
 
-		await test();
+		await dbOperation();
 		callback(resultArray);
 	}
 
-	getLatestBlock(){
-	    MongoClient.connect(url, (err, db) => {
-	        if(err) throw err;
-	        const dbo = db.db("currencyup_blockchain");
-	        const count = dbo.collection("blocks").count() -1;
-	        const blocks = dbo.collection('blocks').find().skip(count);
-	        blocks.forEach((doc, err) => {
-	            if(err) throw err;
-	            resultArray.push(doc);
-	        }, () => {
-	            db.close();
-	            return resultArray ;
-	        });
-	    });
-		return resultArray[0];
+	getLatestBlock(callback){
+		let resultArray = [];
+
+		async function dbOperation() {
+			const db = await MongoClient.connect(url);
+			const dbo = db.db('currencyup_blockchain');
+			// Don't `await`, instead get a cursor
+			const count = dbo.collection('Blocks').count() -1;
+	        const cursor = dbo.collection('Blocks').find().skip(count);
+			// Use `next()` and `await` to exhaust the cursor
+			for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
+			    resultArray.push(doc);
+			}
+			db.close();
+		}
+
+		await dbOperation();
+		callback(resultArray[0]);
 	}
 
 	calculateHash(){
