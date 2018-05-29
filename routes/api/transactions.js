@@ -1,22 +1,20 @@
 const Blockchain = require('../../models/blockchain/blockchain');
 const Block = require('../../models/blockchain/block');
+const globalBlock = new Block();
+const globalBlockchain = new Blockchain();
 
 const express = require('express');
 const router = express.Router();
 
-router.get('/api/blocks', (req, res) => { 
-    const block = new Block();
-    const blocks = block.all();
-    console.log(blocks);
-    res.status(200).send(blocks);
+router.get('/api/blocks', (req, res) => {
+    globalBlock.all(result => res.status(200).send(result));
 });
 
 
 router.post('/api/blocks', (req, res) => {
-    const blockchain = new Blockchain();
-    let transactionInfo = req.body;
-    blockchain.createTransaction(transactionInfo);
-    const minedTran = blockchain.miningPendingTransactions("address");
+    let transactionInfo = {};
+    globalBlockchain.createTransaction(transactionInfo);
+    const minedTran = globalBlockchain.miningPendingTransactions("address");
     res.status(200).send(minedTran);
 });
 
