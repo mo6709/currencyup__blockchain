@@ -39,13 +39,10 @@ class Block{
 		  for (let doc = await cursor.next(); doc != null; doc = await cursor.next()) {
 		    resultArray.push(doc);
 		  }
-		  console.log("call at the end of test");
 		}
 
-        console.log("call before test");
 		await test();
 		callback(resultArray);
-		console.log("call after test");
 	}
 
 	getLatestBlock(){
