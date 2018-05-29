@@ -1,30 +1,31 @@
 const Transaction = require('../transaction');
 const Block = require('./block');
+const globalBlock = new Block();
 
 class Blockchain{
-	constructor(){
+    constructor(){
         this.difficulty = 2;
         this.miningReward = 100;
-	}
+    }
 
-	createGenesisBlock(){
-		var block = new Block(Data.now(), ["Genesis block"], "0");
-        Block.insertToDB(block);
-        return block;
-	}
+    createGenesisBlock(){
+        var newBlock = new Block(Data.now(), ["Genesis block"], "0");
+        globalBlock.insertToDB(newBlock);
+        return newBlock;
+    }
 
-	miningPendingTransactions(miningRewardAddress){
-        let block = new Block(Data.now(), Transaction.pendingTransactions(), Block.getLatestBlock().hash);
-        block.mineBlock(this.difficulty);
+    miningPendingTransactions(miningRewardAddress){
+        let newBlock = new Block(Data.now(), Transaction.pendingTransactions(), globalBlock.getLatestBlock().hash);
+        globalBlock.mineBlock(this.difficulty);
 
-        block.insertToDb(block);
+        globalBlock.insertToDb(newBlock);
         //reset the transactions array after the miner finish to mine it
         //add new transaction to reword the miner
         Transaction.resetPendingTransactions({ 
             toAddress: miningRewardAddress, 
             total_amount: this.miningReward 
         });
-	}
+    }
     
 
     createTransaction(transaction){
@@ -32,40 +33,44 @@ class Blockchain{
     }
 
     getBalanceOfAddress(address){
-    	balance = 0;
+        let balance = 0;
+        let chain = [];
+        globalBlock.all(result => chain = result);
 
-    	for(const block in Block.all()){
-    		for(const transaction in block.transactions){
-    			if(transaction.fromAddress === address){
-    				balance -= transaction.amount;
-    			}
+        for(const block in chain){
+            for(const transaction in block.transactions){
+                if(transaction.fromAddress === address){
+                    balance -= transaction.amount;
+                }
 
-    			if(transaction.toAddress === address){
-    				balance += transaction.amount;
-    			}
-    		}
-    	}
+                if(transaction.toAddress === address){
+                    balance += transaction.amount;
+                }
+            }
+        }
 
         return balance;
     }
 
-	isChainValid(){
-        const chain = Block.all();
-		for(let i = 1; i < chain.length; i++){
+    isChainValid(){
+        const chain = [];
+        globalBlock.all(result => chain = result);
+
+        for(let i = 1; i < chain.length; i++){
             const currentBlock = chain[i];
             const previousBlock = chain[i -1];
 
             if(currentBlock.hash !== currentBlock.calculateHash()){
-            	return false;
+                return false;
             }
 
             if(currentBlock.previousHash !== previousBlock.hash){
-            	return false;
+                return false;
             }
-		}
+        }
 
-		return true;
-	}
+        return true;
+    }
 }
 
 module.exports = Blockchain;
