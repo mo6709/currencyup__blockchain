@@ -40,7 +40,7 @@ class Transaction{
         await dbOperation();
     }
 
-    async pendingTransactions(){
+    async pendingTransactions(callback){
         let resultArray = [];
 
         async function dbOperation() {
