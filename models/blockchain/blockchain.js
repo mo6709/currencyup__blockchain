@@ -16,16 +16,25 @@ class Blockchain{
     }
 
     miningPendingTransactions(miningRewardAddress){
-        let newBlock = new Block(Data.now(), globalTransaction.pendingTransactions(), globalBlock.getLatestBlock().hash);
-        globalBlock.mineBlock(this.difficulty);
+        let allPendiingTransactions;
+        let latestBlock;
+
+        globalTransaction.pendingTransactions(result => allPendiingTransactions = result);
+        globalBlock.getLatestBlock(result => latestBlock = result);
+
+        const newBlock = new Block(Data.now(), allPendiingTransactions, latestBlock.hash);
+        newBlock.mineBlock(this.difficulty);
 
         globalBlock.insertToDB(newBlock);
-        //reset the transactions array after the miner finish to mine it
+        //reset the pending transactions after the miner finish to mine the block
         //add new transaction to reword the miner
-        globalTransaction.resetPendingTransactions({ 
+        const transaction = new Transaction({ 
             toAddress: miningRewardAddress, 
             total_amount: this.miningReward 
         });
+        globalTransaction.resetPendingTransactions(transaction);
+
+        return newBlock.hash;
     }
     
 
